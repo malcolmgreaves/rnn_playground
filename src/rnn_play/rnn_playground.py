@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Tuple, Any, Sequence
+from typing import Callable, Tuple, Sequence
 
 import numpy as np
 from sklearn.utils.extmath import softmax
@@ -33,19 +33,11 @@ class NnUnit(ABC):
     #     raise NotImplementedError
 
 
-class VanillaRnnUnit(NnUnit):
-    def __init__(self, w_h: np.ndarray, b_h: float,
-                 w_o: np.ndarray, b_o: float,
-                 w_x: np.ndarray,
-                 f: Callable[[np.ndarray], np.ndarray],
-                 h_initial: np.ndarray) -> None:
-        self.w_h = w_h
-        self.b_h = b_h
-        self.w_o = w_o
-        self.b_o = b_o
-        self.w_x = w_x
-        self.f = f
-        self.h_initial = h_initial
+class RnnUnit(NnUnit, ABC):
+    @property
+    @abstractmethod
+    def h_initial(self) -> np.ndarray:
+        raise NotImplementedError
 
     def sequence(self, x: Sequence[np.ndarray]) -> Tuple[Sequence[np.ndarray], Sequence[np.ndarray]]:
         if len(x) == 0:
@@ -60,6 +52,28 @@ class VanillaRnnUnit(NnUnit):
             outputs.append(y)
             hidden_states.append(h)
         return outputs, hidden_states
+
+    @abstractmethod
+    def compute(self, x_t: np.ndarray, h_tm1: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        raise NotImplementedError
+
+
+class VanillaRnnUnit(RnnUnit):
+    def __init__(self, w_h: np.ndarray, b_h: float,
+                 w_o: np.ndarray, b_o: float,
+                 w_x: np.ndarray,
+                 f: Callable[[np.ndarray], np.ndarray],
+                 h_initial: np.ndarray) -> None:
+        self.w_h = w_h
+        self.b_h = b_h
+        self.w_o = w_o
+        self.b_o = b_o
+        self.w_x = w_x
+        self.f = f
+        self.h_0 = h_initial
+
+    def h_initial(self) -> np.ndarray:
+        return self.h_0
 
     def compute(self, x_t: np.ndarray, h_tm1: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         # calculate new hidden state
