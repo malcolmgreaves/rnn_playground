@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Tuple, Any
+from typing import Callable, Tuple, Any, Sequence
 
 import numpy as np
 from sklearn.utils.extmath import softmax
@@ -35,15 +35,31 @@ class NnUnit(ABC):
 
 class VanillaRnnUnit(NnUnit):
     def __init__(self, w_h: np.ndarray, b_h: float,
-                 w_0: np.ndarray, b_0: float,
+                 w_o: np.ndarray, b_o: float,
                  w_x: np.ndarray,
-                 f: Callable[[np.ndarray], np.ndarray]) -> None:
+                 f: Callable[[np.ndarray], np.ndarray],
+                 h_initial: np.ndarray) -> None:
         self.w_h = w_h
         self.b_h = b_h
-        self.w_0 = w_0
-        self.b_0 = b_0
+        self.w_o = w_o
+        self.b_o = b_o
         self.w_x = w_x
         self.f = f
+        self.h_initial = h_initial
+
+    def sequence(self, x: Sequence[np.ndarray]) -> Tuple[Sequence[np.ndarray], Sequence[np.ndarray]]:
+        if len(x) == 0:
+            raise ValueError("Input sequence must not be empty.")
+
+        outputs, hidden_states = [], []
+        y, h = self.compute(x[0], self.h_initial)
+        outputs.append(y)
+        hidden_states.append(h)
+        for next_x in x[1:]:
+            y, h = self.compute(next_x, h)
+            outputs.append(y)
+            hidden_states.append(h)
+        return outputs, hidden_states
 
     def compute(self, x_t: np.ndarray, h_tm1: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         # calculate new hidden state
@@ -51,8 +67,8 @@ class VanillaRnnUnit(NnUnit):
         w_t_input = self.w_x.transpose().dot(x_t)
         h_t = self.f(w_t_previous_h + w_t_input + self.b_h)
         # calculate output
-        w_t_hidden = self.w_0.transpose().dot(h_t)
-        y_t = softmax(w_t_hidden + self.b_0)
+        w_t_hidden = self.w_o.transpose().dot(h_t)
+        y_t = softmax(w_t_hidden + self.b_o)
         # return output & hidden state
         return y_t, h_t
 
