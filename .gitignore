@@ -1,0 +1,28 @@
+# Misc
+*~
+*.swp
+*.DS_Store
+*.log
+.idea*
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+.mypy_cache
+
+# Building
+build/
+dist/
+.eggs/
+*.egg-info/
+*.so
+
+# Testing
+.cache/
+.coverage*
+!.coveragerc
+htmlcov
+coverage.html
+coverage.xml
+xunit.xml

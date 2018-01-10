@@ -1,0 +1,24 @@
+name: rnn_playground
+channels:
+ - defaults
+ - conda-forge
+ - pytorch
+dependencies:
+  - python=3.6
+  - numpy
+  - scipy
+  - matplotlib
+  - networkx
+  - scikit-learn
+  - cython 
+  - pytest
+  - coverage
+  - pytorch
+  - torchvision
+  - mkl=2018
+  - sphinx
+  - theano
+  - ipython
+  - pip:
+    - keras
+    - mypy
